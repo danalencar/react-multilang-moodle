@@ -163,7 +163,6 @@ To ensure you pass a `fallbackLanguage` value (which should be a string) correct
 
 This snippet demonstrates how to safely extract and process the current and fallback languages from `react-i18next` for use with your library:
 
-    
     import React from 'react';
     import { useTranslation } from 'react-i18next';
     import { MultilangContent, parseMoodleMultilangContent } from 'react-multilang-moodle';
@@ -242,7 +241,6 @@ This snippet demonstrates how to safely extract and process the current and fall
     };
     
     export default MyComponent;
-    
 
 By following this approach, you'll ensure a smooth and robust integration between `react-multilang-moodle` and your internationalization system.
 * * *
@@ -266,6 +264,7 @@ const MyComponent = ({ moodleContent }) => {
   );
 };
 
+```
 
 * * *
 

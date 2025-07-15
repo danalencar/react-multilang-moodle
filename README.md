@@ -143,6 +143,109 @@ To set up the development environment for the library:
     
 
 * * *
+Integration Tips with [react-i18next](https://react.i18next.com/)
+-----------------------------------------------------------------
+
+For developers using the popular `react-i18next` library to manage their application's internationalization, integrating `react-multilang-moodle` is quite intuitive. However, there's an important point to consider when extracting the **fallback** language from `i18next`.
+
+### Pay Attention to `i18n.options.fallbackLng`
+
+The `i18n.options.fallbackLng` property from `i18next` can have different types of values:
+
+*   A **string** (e.g., `'en'`)
+*   An **array of strings** (e.g., `['en', 'es']`)
+*   `false` (if no fallback is defined)
+*   `undefined`
+
+To ensure you pass a `fallbackLanguage` value (which should be a string) correctly to the `<MultilangContent />` component or to the `parseMoodleMultilangContent` function, it's crucial to handle it safely. Otherwise, attempting to call `.toLowerCase()` directly on an array or `false` will result in an error.
+
+### Recommended Usage Example with `useTranslation`:
+
+This snippet demonstrates how to safely extract and process the current and fallback languages from `react-i18next` for use with your library:
+
+    
+    import React from 'react';
+    import { useTranslation } from 'react-i18next';
+    import { MultilangContent, parseMoodleMultilangContent } from 'react-multilang-moodle';
+    
+    const MyComponent = ({ moodleSummaryContent }) => {
+      const { i18n } = useTranslation();
+      const currentLang = i18n.language; // E.g., 'pt-BR', 'en-US'
+    
+      // --- Safe handling of fallbackLng ---
+      let fallbackLang = '';
+      const i18nFallback = i18n.options.fallbackLng;
+    
+      if (Array.isArray(i18nFallback)) {
+        // If it's an array, take the first fallback language
+        fallbackLang = i18nFallback[0] || ''; 
+      } else if (typeof i18nFallback === 'string') {
+        // If it's a string
+        fallbackLang = i18nFallback;
+      }
+      // If it's false or undefined, fallbackLang remains an empty string, which is a safe fallback for your library.
+      // Remember that your library internally already has fallbacks to 'en' and 'other' if the provided 'fallbackLanguage' has no content.
+      // --- End of safe handling ---
+    
+      return (
+        <div>
+          <h3>Multilingual Content (with HTML)</h3>
+          <MultilangContent
+            content={moodleSummaryContent}
+            currentLanguage={currentLang}
+            fallbackLanguage={fallbackLang} // Pass the processed fallback here
+          />
+    
+          <h3>Card Description (plain and truncated text)</h3>
+          {(() => { // We use an IIFE to encapsulate the parsing and truncation logic
+            const parsedContents = parseMoodleMultilangContent(moodleSummaryContent);
+            
+            let localizedHtml = '';
+            const normalizedCurrentLang = currentLang.toLowerCase(); // Normalize current language
+            const normalizedFallbackLang = fallbackLang.toLowerCase(); // Normalize fallback language
+    
+            // Content selection logic (mirrors the component's internal logic)
+            if (parsedContents[normalizedCurrentLang]) {
+              localizedHtml = parsedContents[normalizedCurrentLang];
+            } else if (parsedContents[normalizedFallbackLang]) {
+              localizedHtml = parsedContents[normalizedFallbackLang];
+            } else if (parsedContents['en']) {
+              localizedHtml = parsedContents['en'];
+            } else if (parsedContents['other']) {
+              localizedHtml = parsedContents['other'];
+            } else {
+              // Final fallback: if no {mlang} tags are present, use the original content
+              const availableLangs = Object.keys(parsedContents);
+              if (availableLangs.length > 0) {
+                localizedHtml = parsedContents[availableLangs[0]];
+              } else {
+                localizedHtml = moodleSummaryContent; // If NO {mlang} tags are found at all
+              }
+            }
+    
+            // Simple function to strip HTML tags
+            const stripHtml = (html) => {
+              const doc = new DOMParser().parseFromString(html, 'text/html');
+              return doc.body.textContent || "";
+            };
+    
+            const rawText = stripHtml(localizedHtml);
+            const MAX_LENGTH = 240; // Example character limit
+            const truncatedText = rawText.length > MAX_LENGTH
+              ? rawText.substring(0, MAX_LENGTH) + '...'
+              : rawText;
+    
+            return <p>{truncatedText}</p>;
+          })()}
+        </div>
+      );
+    };
+    
+    export default MyComponent;
+    
+
+By following this approach, you'll ensure a smooth and robust integration between `react-multilang-moodle` and your internationalization system.
+* * *
 
 Contributing
 ---------------

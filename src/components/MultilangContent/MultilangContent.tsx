@@ -1,4 +1,3 @@
-import React from 'react';
 import { parseMoodleMultilangContent } from '../../utils/parser';  
 
 /**

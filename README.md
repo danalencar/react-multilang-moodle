@@ -246,6 +246,28 @@ This snippet demonstrates how to safely extract and process the current and fall
 
 By following this approach, you'll ensure a smooth and robust integration between `react-multilang-moodle` and your internationalization system.
 * * *
+## Using with react-i18next
+
+If you're using [react-i18next](https://react.i18next.com/), you can retrieve the current language directly from the `useTranslation` hook:
+
+```tsx
+import { useTranslation } from 'react-i18next';
+import { MultilangContent } from 'react-multilang-moodle';
+
+const MyComponent = ({ moodleContent }) => {
+  const { i18n } = useTranslation();
+
+  return (
+    <MultilangContent
+      content={moodleContent}
+      currentLanguage={i18n.language} // e.g., 'en', 'pt_br'
+      fallbackLanguage="en"
+    />
+  );
+};
+
+
+* * *
 
 Contributing
 ---------------
